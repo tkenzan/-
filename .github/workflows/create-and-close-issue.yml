@@ -28,7 +28,7 @@ jobs:
             --title "テスト用Issue: 動作確認" \
             --body "このIssueは動作確認のために自動作成されました。数秒後に自動クローズされます。" \
             --label challenge)
-          ISSUE_NUMBER=$(echo "$ISSUE_URL" | grep -o '[0-9]*$')
+          ISSUE_NUMBER=$(echo "$ISSUE_URL" | grep -o '[0-9]\+$')
           echo "issue_number=$ISSUE_NUMBER" >> "$GITHUB_OUTPUT"
           echo "作成されたIssue番号: $ISSUE_NUMBER"
 
