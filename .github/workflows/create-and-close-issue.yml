@@ -1,0 +1,45 @@
+name: テスト用Issue作成・クローズ
+
+on:
+  workflow_dispatch:
+
+jobs:
+  create-and-close-issue:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+
+    steps:
+      - name: challengeラベルを作成（存在しない場合）
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh label create challenge --color "#0075ca" --description "Challenge issue" \
+            || echo "ラベルはすでに存在しています"
+
+      - name: テスト用Issueを作成
+        id: create_issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          ISSUE_URL=$(gh issue create \
+            --title "テスト用Issue: 動作確認" \
+            --body "このIssueは動作確認のために自動作成されました。数秒後に自動クローズされます。" \
+            --label challenge)
+          ISSUE_NUMBER=$(echo "$ISSUE_URL" | grep -o '[0-9]\+$')
+          echo "issue_number=$ISSUE_NUMBER" >> "$GITHUB_OUTPUT"
+          echo "作成されたIssue番号: $ISSUE_NUMBER"
+
+      - name: 数秒待機
+        run: sleep 5
+
+      - name: Issueをクローズ
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh issue close ${{ steps.create_issue.outputs.issue_number }} \
+            --comment "動作確認完了。Issueを自動クローズしました。"
+          echo "Issue #${{ steps.create_issue.outputs.issue_number }} をクローズしました"
